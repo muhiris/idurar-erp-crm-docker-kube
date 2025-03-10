@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  # Frontend Environment Variables
+  VITE_FILE_BASE_URL: "http://localhost:8888/"
+  VITE_BACKEND_SERVER: "http://localhost:8888/"
+  PROD: "false"
+
+  # Backend Environment Variables
+  DATABASE: "mongodb+srv://haris:muhiris123@idurar-mongo.gefo8.mongodb.net/?retryWrites=true&w=majority&appName=idurar-mongo"
+  MONGODB_URI: "mongodb+srv://haris:muhiris123@idurar-mongo.gefo8.mongodb.net/?retryWrites=true&w=majority&appName=idurar-mongo"
+  JWT_SECRET: "your_private_jwt_secret_key"
+  NODE_ENV: "production"
+  OPENSSL_CONF: "/dev/null"
+  PUBLIC_SERVER_FILE: "http://localhost:8888/"

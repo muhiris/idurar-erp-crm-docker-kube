@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dep-idurar-front
+  labels:
+    app: dep-idurar-front
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: idurar-front
+  template:
+    metadata:
+      labels:
+        app: idurar-front
+    spec:
+      containers:
+      - name: idurar-frontend
+        image: muhiris/idurar-frontend:latest
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: app-config
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-idurar-front
+spec:
+  type: NodePort
+  selector:
+    app: idurar-front
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30007

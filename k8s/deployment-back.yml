@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dep-idurar-back
+  labels:
+    app: dep-idurar-back
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: idurar-back
+  template:
+    metadata:
+      labels:
+        app: idurar-back
+    spec:
+      containers:
+      - name: idurar-backend
+        image: muhiris/idurar-backend:latest
+        ports:
+        - containerPort: 8888
+        env:
+        - name: DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DATABASE
+        - name: NODE_ENV
+          value: "production"
+        - name: JWT_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: JWT_SECRET
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-idurar-back
+spec:
+  selector:
+    app: idurar-back
+  ports:
+    - protocol: TCP
+      port: 8888
+      targetPort: 8888
+  type: ClusterIP
+  

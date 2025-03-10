@@ -1,132 +1,175 @@
-## Getting started
+# IDURAR ERP/CRM Setup Guide
 
-#### Step 1: Clone the repository
+This guide will walk you through setting up the IDURAR ERP/CRM application, with detailed instructions for MongoDB Atlas configuration.
 
+## Getting Started
+
+### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/idurar/idurar-erp-crm.git
-```
-
-```bash
 cd idurar-erp-crm
 ```
 
-#### Step 2: Create Your MongoDB Account and Database Cluster
+### Step 2: Set Up MongoDB Atlas
 
-- Create your own MongoDB account by visiting the MongoDB website and signing up for a new account.
+1. **Create a MongoDB Atlas Account**
+   - Visit [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register) and sign up or log in
+   - Click "Create" to start a new project
+   - Name your project (e.g., "IDURAR-ERP") and click "Next"
+   - You can skip adding members and click "Create Project"
 
-- Create a new database or cluster by following the instructions provided in the MongoDB documentation. Remember to note down the "Connect to your application URI" for the database, as you will need it later. Also, make sure to change `<password>` with your own password
+2. **Create a Database Cluster**
+   - Click "Build a Database"
+   - Select the free tier option (M0)
+   - Choose your preferred cloud provider and region closest to you
+   - Name your cluster (e.g., "idurar-mongo")
+   - Click "Create"
 
-- add your current IP address to the MongoDB database's IP whitelist to allow connections (this is needed whenever your ip changes)
+3. **Set Up Database Security**
+   - Under "Security Quickstart", create a database user:
+     - Username: Choose a username (e.g., "idurar-admin")
+     - Password: Create a strong password (save this for later)
+     - Click "Create User"
+   
+   - Add your IP address to the allowlist:
+     - Click "Add My Current IP Address" 
+     - Or for development, you can add "0.0.0.0/0" to allow access from anywhere (not recommended for production)
+     - Click "Finish and Close"
 
-#### Step 3: Edit the Environment File
+4. **Get Your Connection String**
+   - Click "Connect" on your cluster dashboard
+   - Select "Connect your application"
+   - Copy the connection string that looks like:
+     ```
+     mongodb+srv://<username>:<password>@idurar-mongo.xxxxx.mongodb.net/?retryWrites=true&w=majority
+     ```
+   - Replace `<username>` with your database username
+   - Replace `<password>` with your database password
 
-- Check a file named .env in the /backend directory.
+### Step 3: Configure Environment Variables
 
-  This file will store environment variables for the project to run.
+1. **Set Up Backend Environment**
+   - Navigate to the backend directory: `cd backend`
+   - Create or edit the `.env` file:
+   ```
+   DATABASE="mongodb+srv://your-username:your-password@idurar-mongo.xxxxx.mongodb.net/?retryWrites=true&w=majority"
+   JWT_SECRET="your_private_jwt_secret_key"
+   NODE_ENV="development"
+   OPENSSL_CONF='/dev/null'
+   ```
+   - Replace the DATABASE value with your actual MongoDB connection string
 
-#### Step 4: Update MongoDB URI
+### Step 4: Install and Run Backend
 
-In the .env file, find the line that reads:
+1. **Install Dependencies**
+   ```bash
+   cd backend
+   npm install
+   ```
 
-`DATABASE="your-mongodb-uri"`
+2. **Run Setup Script**
+   ```bash
+   npm run setup
+   ```
+   This creates necessary database collections and initial data.
 
-Replace "your-mongodb-uri" with the actual URI of your MongoDB database.
+3. **Start Backend Server**
+   ```bash
+   npm run dev
+   ```
+   The server should start at http://localhost:8888
 
-#### Step 5: Install Backend Dependencies
+   > **Note:** If you see an error about Node.js version, upgrade to Node.js v20+ using:
+   > ```bash
+   > # Using nvm (recommended)
+   > nvm install 20
+   > nvm use 20
+   > # Or download from nodejs.org
+   > ```
 
-In your terminal, navigate to the /backend directory
+### Step 5: Install and Run Frontend
 
-```bash
-cd backend
+1. **Open a New Terminal Window** and navigate to the project root directory
+
+2. **Install Frontend Dependencies**
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+3. **Start Frontend Server**
+   ```bash
+   npm run dev
+   ```
+   The frontend will be available at http://localhost:3000
+
+   > **If you encounter OpenSSL errors:**
+   > 
+   > This is due to Node.js v17+ compatibility issues with OpenSSL. Try:
+   > 
+   > - **Option 1:** Set OpenSSL legacy provider before running:
+   >   ```bash
+   >   # On Linux/macOS
+   >   export NODE_OPTIONS=--openssl-legacy-provider
+   >   
+   >   # On Windows Command Prompt
+   >   set NODE_OPTIONS=--openssl-legacy-provider
+   >   
+   >   # On Windows PowerShell
+   >   $env:NODE_OPTIONS = "--openssl-legacy-provider"
+   >   ```
+   >
+   > - **Option 2:** Upgrade to Node.js v20+ (recommended)
+
+## Troubleshooting MongoDB Connection
+
+### Common MongoDB Atlas Issues:
+
+1. **Connection Refused Error**
+   - Verify your IP is in the Network Access allowlist on MongoDB Atlas
+   - Navigate to: Atlas Dashboard → Network Access → Add IP Address
+
+2. **Authentication Failed**
+   - Check that username and password in your connection string are correct
+   - In MongoDB Atlas: Database Access → Edit → Update Password
+
+3. **Cluster Status Shows "Inactive"**
+   - Check if your cluster is paused (free tier clusters pause after inactivity)
+   - Resume your cluster from the Atlas dashboard
+
+4. **Wrong Connection String Format**
+   - Make sure you've copied the entire string from MongoDB Atlas
+   - Double-check that you've replaced placeholders with actual values
+
+### Testing Your MongoDB Connection
+
+You can test your connection with this simple script before proceeding:
+
+```javascript
+// Save as test-mongo.js in your backend directory
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+mongoose.connect(process.env.DATABASE)
+  .then(() => {
+    console.log('MongoDB connection successful!');
+    mongoose.connection.close();
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+  });
 ```
 
-the urn the following command to install the backend dependencies:
+Run with: `node test-mongo.js`
 
-```bash
-npm install
-```
+## Logging In After Setup
 
-This command will install all the required packages specified in the package.json file.
+- Default admin credentials:
+  - Email: admin@demo.com
+  - Password: admin123
 
-#### Step 6: Run Setup Script
+## Additional Resources
 
-While still in the /backend directory of the project, execute the following command to run the setup script:
-
-```bash
-npm run setup
-```
-
-This setup script may perform necessary database migrations or any other initialization tasks required for the project.
-
-#### Step 7: Run the Backend Server
-
-In the same terminal, run the following command to start the backend server:
-
-```bash
-npm run dev
-```
-
-This command will start the backend server, and it will listen for incoming requests.
-
-#### Step 8: Install Frontend Dependencies
-
-Open a new terminal window , and run the following command to install the frontend dependencies:
-
-```bash
-cd frontend
-```
-
-```bash
-npm install
-```
-
-#### Step 9: Run the Frontend Server
-
-After installing the frontend dependencies, run the following command in the same terminal to start the frontend server:
-
-```bash
-npm run dev
-```
-
-This command will start the frontend server, and you'll be able to access the website on localhost:3000 in your web browser.
-
-:exclamation: :warning:` If you encounter an OpenSSL error while running the frontend server, follow these additional steps:`
-
-Reason behind error: This is caused by the node.js V17 compatible issues with OpenSSL, see [this](https://github.com/nodejs/node/issues/40547) and [this](https://github.com/webpack/webpack/issues/14532) issue on GitHub.
-
-
-Try one of these and error will be solved
-
-- > upgrade to Node.js v20.
-
-- > Enable legacy OpenSSL provider
-
-Here is how you can enable legacy OpenSSL provider
-
-- On Unix-like (Linux, macOS, Git bash, etc.)
-
-```bash
-export NODE_OPTIONS=--openssl-legacy-provider
-```
-
-- On Windows command prompt:
-
-```bash
-set NODE_OPTIONS=--openssl-legacy-provider
-```
-
-- On PowerShell:
-
-```bash
-$env:NODE_OPTIONS = "--openssl-legacy-provider"
-```
-
-Here is [reference](https://github.com/webpack/webpack/issues/14532#issuecomment-947012063) about enabling legacy OpenSSL provider
-
-After trying above solutions, run below command
-
-```bash
-npm run dev
-```
-
-> If you still facing issue, then follow [this stackoverflow thread](https://stackoverflow.com/questions/69692842/error-message-error0308010cdigital-envelope-routinesunsupported). It has so many different types of opinions. You definitely have solution after going through the thread.
+- [MongoDB Atlas Documentation](https://docs.atlas.mongodb.com/)
+- [IDURAR GitHub Repository](https://github.com/idurar/idurar-erp-crm)
+- For more help, visit the IDURAR community forum or GitHub issues page
